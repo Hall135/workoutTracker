@@ -1,14 +1,14 @@
 {
     "name": "Workout Tracker",
     "short_name": "Workouts",
-    "start_url": "index.html",
+    "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#121212",
     "theme_color": "#121212",
     "orientation": "portrait",
     "icons": [
     {
-        "src": "/assets/fitness_center.png",
+        "src": "./assets/fitness_center.png",
         "type": "image/png",
         "sizes": "180x180"
     }
