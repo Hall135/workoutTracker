@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Workout Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212"/>
+    <link rel="icon" href="/assets/fitness_center.png" type="image/png">
+    <link rel="stylesheet" href="styles.css" type="text/css">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"> -->
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+</head>
+
+<body>
+    <div class="container">            
+        
+        <h1>
+            <i class="material-icons">fitness_center</i> Workout Tracker
+        </h1>
+        
+        <!-- Create Plan -->
+        <div class="section">
+            <h2>Create Workout Plan</h2>
+            <input type="text" id="planName" placeholder="Workout Plan Name"/>
+            <button onclick="createPlan()">Create Plan</button>
+        </div>
+
+        <!-- Add Exercise -->
+        <div class="section">
+            <h2>Add Exercise</h2>
+            <select id="planSelect"></select>
+            <input type="text" id="exerciseName" placeholder="Exercise Name"/>
+            <button onclick="addExercise()">Add Exercise</button>
+        </div>
+
+        <!-- Log Workout -->
+        <div class="section">
+            <h2>Log Workout</h2>
+            <select id="logPlanSelect" onchange="renderExerciseInputs()"></select>
+            <div id="exerciseInputsContainer"></div>
+            <button onclick="addSet()">➕ Add Set</button>
+            <button onclick="logEntireWorkout()">✅ Log Entire Workout</button>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <a href="index.html" class="navLink navLinkActive">
+            <i class="material-icons navIcon">dashboard</i>
+            <span class="navText">Dashboard</span>
+        </a>
+
+        <a href="historyTab.html" class="navLink">
+            <i class="material-icons navIcon">history</i>
+            <span class="navText">History</span>
+        </a>
+
+        <a href="developerTab.html" class="navLink">
+            <i class="material-icons navIcon">settings</i>
+            <span class="navText">Developer</span>
+        </a>
+    </nav>
+
+    <script src="app.js"></script>
+    <script>
+        init();
+    </script>
+
+    <!-- Service Worker Registration (keeps same behavior as before) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('Service Worker registered ✅', reg))
+            .catch(err => console.error('Service Worker registration failed ❌', err));
+        });
+        }
+    </script>
+</body>
+</html>

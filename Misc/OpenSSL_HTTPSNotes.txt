@@ -1,0 +1,43 @@
+PrivateKey and Cert Creation Using OpenSSL:
+    CMD: openssl genrsa -aes256 -out localhost.key 2048
+    CMD: openssl req -days 3650 -new -newkey rsa:2048 -key localhost.key -x509 -out localhost.pem
+
+    Country Name: US
+    State or Province Name: New York
+    Locality Name: Binghamton
+    Organization Name: DH
+    Organizational Unit Name: Dev
+    Common Name: localhost
+    Email Address: renrenhall1997@gmail.com
+
+Activating Live Server using Live Server VS Code Extension:
+    settings.json in .vscode Folder File Contents:
+    	    {
+		"liveServer.settings.port": 5500,
+ 		"liveServer.settings.root": "/",
+		"liveServer.settings.CustomBrowser": "chrome",
+		"liveServer.settings.https": {
+    		"enable": true,
+    		"cert": "/Users/renre/Documents/WorkoutTracker/certificate/localhost.pem",
+    		"key": "/Users/renre/Documents/WorkoutTracker/certificate/localhost.key",
+    		"passphrase": "1234"
+    		}
+            }
+
+Activating HTTP Live Server Using Python:
+    CMD: python -m http.server 8000
+    Google: http://localhost:8000
+
+Activating HTTPS Live Server Using Python:
+    CMD: python -m http.server 5500 --bind 0.0.0.0 --directory "Served Directory Path" --ssl-certfile "cert.pem Path"  --ssl-keyfile "key.pem Path"
+
+LocalTunnel:
+	Install Node.js
+	npm install -g localtunnel
+	Run Local Server (LiveServer OR Python)
+	lt --port 5500 (Separate CMD Window)
+
+Connecting to Phone:
+    Use ipconfig to find Laptop's IP Address
+    HTTP URL: 192.168.1.246:8000/index.html
+    HTTPS URL: https://192.168.1.246:5500/index.html
