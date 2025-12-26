@@ -1,13 +1,13 @@
 const CACHE_NAME = 'workout-tracker-cache-v1';
 const FILES_TO_CACHE = [
-  'index.html',
-  'historyTab.html',
-  'developerTab.html',
-  'manifest.json',
-  'assets/fitness_center.png',
-  'assets/font/materialIconsFont.woff2',
-  'app.js',
-  'styles.css'
+  './index.html',
+  './historyTab.html',
+  './developerTab.html',
+  './manifest.json',
+  './assets/fitness_center.png',
+  './assets/font/materialIconsFont.woff2',
+  './app.js',
+  './styles.css'
 ];
 
 // Install service worker and cache app files
