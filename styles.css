@@ -185,4 +185,3 @@ pre {
 /* make history header area tidy */
 #historyControls { display:flex; gap:1rem; align-items:center; justify-content:center; margin-bottom:0.5rem; }
 #historyTitle { margin:0.5rem 0; text-align:center; }
-
