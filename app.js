@@ -3,6 +3,7 @@ let db;
 let plans = {};
 let workoutLogs = [];
 let setsPerExercise = 4;
+let chart;
 
 function openDB() {
     return new Promise((resolve, reject) => {
@@ -218,18 +219,19 @@ function renderWorkoutTable() {
 
     for (const plan in grouped) {
         const planRow = document.createElement("tr");
-        planRow.innerHTML = `<td colspan="4" style="text-align:center;"><strong>${plan}</strong></td>`;
+        planRow.innerHTML = `<td colspan="5" style="text-align:center;"><strong>${plan}</strong></td>`;
         tbody.appendChild(planRow);
 
         for (const exercise in grouped[plan]) {
             const exRow = document.createElement("tr");
-            exRow.innerHTML = `<td colspan="4" style="text-align:center;"><em>${exercise}</em></td>`;
+            exRow.innerHTML = `<td colspan="5" style="text-align:center;"><em>${exercise}</em></td>`;
             tbody.appendChild(exRow);
 
             grouped[plan][exercise].sort((a,b)=>a.set-b.set).forEach(log => {
                 const row = document.createElement("tr");
                 row.setAttribute("data-id", log.id);
                 row.innerHTML = `
+                    <td contenteditable="true">${log.date}</td>
                     <td>${log.set}</td>
                     <td contenteditable="true">${log.weight}</td>
                     <td contenteditable="true">${log.reps}</td>
@@ -250,11 +252,14 @@ function updateLog(id) {
     const cells = row.querySelectorAll("td");
     const index = workoutLogs.findIndex(l => l.id === id);
     if (index === -1) return;
-    // cells[0] = set, cells[1] = weight, cells[2] = reps
-    workoutLogs[index].weight = cells[1].textContent.trim();
-    workoutLogs[index].reps = cells[2].textContent.trim();
-    saveData();
-    // no UI refresh required (in-place edit)
+    // cells[0] = date, cells[1] = set, cells[2] = weight, cells[3] = reps
+    workoutLogs[index].date   = cells[0].textContent.trim();
+    workoutLogs[index].weight = cells[2].textContent.trim();
+    workoutLogs[index].reps = cells[3].textContent.trim();
+    saveData().then(() => {
+        updateDateSelector();
+        renderWorkoutTable();
+    });
 }
 
 function deleteLog(id) {
@@ -263,6 +268,122 @@ function deleteLog(id) {
         updateDateSelector();
         renderWorkoutTable();
     });
+}
+
+// ---------- Graphs --------
+function populatePlanSelect() {
+    const select = document.getElementById("graphPlanSelect");
+    select.innerHTML = "";
+
+    for (let plan in plans) {
+        const opt = document.createElement("option");
+        opt.value = plan;
+        opt.textContent = plan;
+        select.appendChild(opt);
+    }
+
+    updateExerciseSelect();
+}
+
+function updateExerciseSelect() {
+    const plan = document.getElementById("graphPlanSelect").value;
+    const select = document.getElementById("graphExerciseSelect");
+    select.innerHTML = "";
+
+    if (!plans[plan]) return;
+
+    plans[plan].forEach(ex => {
+        const opt = document.createElement("option");
+        opt.value = ex;
+        opt.textContent = ex;
+        select.appendChild(opt);
+    });
+
+    updateSetSelect();
+}
+
+function updateSetSelect() {
+    const plan = document.getElementById("graphPlanSelect").value;
+    const exercise = document.getElementById("graphExerciseSelect").value;
+    const select = document.getElementById("graphSetSelect");
+    select.innerHTML = "";
+
+    const sets = new Set(
+    workoutLogs
+        .filter(l => l.plan === plan && l.exercise === exercise)
+        .map(l => l.set)
+    );
+
+    [...sets].sort((a,b)=>a-b).forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = `Set ${s}`;
+        select.appendChild(opt);
+    });
+
+    renderGraph();
+}
+
+// ---------------- Graph Rendering ----------------
+
+function renderGraph() {
+    const plan = document.getElementById("graphPlanSelect").value;
+    const exercise = document.getElementById("graphExerciseSelect").value;
+    const set = parseInt(document.getElementById("graphSetSelect").value, 10);
+    const minReps = parseInt(document.getElementById("minRepsInput").value || "0", 10);
+
+    const filtered = workoutLogs
+    .filter(l =>
+        l.plan === plan &&
+        l.exercise === exercise &&
+        l.set === set &&
+        parseInt(l.reps,10) >= minReps
+    )
+    .sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+    const labels = filtered.map(l => l.date);
+    const weights = filtered.map(l => parseFloat(l.weight));
+
+    const title = `${plan} — ${exercise} — Set ${set} — Min Reps ${minReps}`;
+
+    const data = {
+    labels,
+    datasets: [{
+        label: "Weight",
+        data: weights,
+        fill: false,
+        tension: 0.2
+    }]
+    };
+
+    const config = {
+    type: "line",
+    data,
+    options: {
+        responsive: true,
+        plugins: {
+        title: {
+            display: true,
+            text: title
+        },
+        legend: {
+            display: false
+        }
+        },
+        scales: {
+        x: {
+            title: { display: true, text: "Date" }
+        },
+        y: {
+            title: { display: true, text: "Weight" },
+            beginAtZero: true
+        }
+        }
+    }
+    };
+
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("trendChart"), config);
 }
 
 // ---------- Developer Tab ----------
@@ -438,4 +559,10 @@ async function initDeveloperTab() {
     await openDB();
     await loadData();
     refreshDevTab();
+}
+
+async function initGraphs() {
+    await openDB();
+    await loadData();
+    populatePlanSelect();
 }

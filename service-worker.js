@@ -1,11 +1,13 @@
-const CACHE_NAME = 'workout-tracker-cache-v1';
+const CACHE_NAME = 'workout-tracker-cache-v2';
 const FILES_TO_CACHE = [
   './index.html',
   './historyTab.html',
+  './graphsTab.html',
   './developerTab.html',
   './manifest.json',
   './assets/fitness_center.png',
   './assets/font/materialIconsFont.woff2',
+  './libs/chartjs/chart.js',
   './app.js',
   './styles.css'
 ];

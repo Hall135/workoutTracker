@@ -4,42 +4,38 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Workout Tracker</title>
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212"/>
     <link rel="icon" href="./assets/fitness_center.png" type="image/png">
-    <link rel="stylesheet" href="./styles.css" type="text/css">
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"> -->
+    <link rel="stylesheet" href="styles.css" type="text/css">
     <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
 </head>
 
-<!-- Workout History -->
 <body>
     <div class="container">
         <h1>
             <i class="material-icons">fitness_center</i> Workout Tracker
-        </h1>
+        </h1>        
 
+        <!-- Graph Controls -->
         <div class="section">
-            <h2>Workout History</h2>
-            <div id="historyControls">
-                <label for="historyDateSelect">Select Date:</label>
-                <select id="historyDateSelect" onchange="renderWorkoutTable()"></select>
-            </div>
+            <h2>📈 Workout Trends</h2>
+            <label>Plan:</label>
+            <select id="graphPlanSelect" onchange="updateExerciseSelect()"></select>
 
-            <h3 id="historyTitle"></h3>
+            <label>Exercise:</label>
+            <select id="graphExerciseSelect" onchange="updateSetSelect()"></select>
 
-            <table id="workoutTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Set</th>
-                        <th>Weight</th>
-                        <th>Reps</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <label>Set:</label>
+            <select id="graphSetSelect" onchange="renderGraph()"></select>
+
+            <label>Min Reps:</label>
+            <input type="number" id="minRepsInput" value="0" oninput="renderGraph()" />
+        </div>
+
+        <!-- Chart -->
+        <div class="section">
+            <canvas id="trendChart"></canvas>
         </div>
     </div>
 
@@ -49,12 +45,12 @@
             <span class="navText">Dashboard</span>
         </a>
 
-        <a href="./historyTab.html" class="navLink navLinkActive">
+        <a href="./historyTab.html" class="navLink">
             <i class="material-icons navIcon">history</i>
             <span class="navText">History</span>
         </a>
 
-        <a href="./graphsTab.html" class="navLink">
+        <a href="./graphsTab.html" class="navLink navLinkActive">
             <i class="material-icons navIcon">show_chart</i>
             <span class="navText">Graphs</span>
         </a>
@@ -64,10 +60,12 @@
             <span class="navText">Developer</span>
         </a>
     </nav>
-
-    <script src="./app.js"></script>
+    
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <script src="./libs/chartjs/chart.js"></script>
+    <script src="app.js"></script>
     <script>
-        initHistoryTab();
+        initGraphs();
     </script>
 </body>
 </html>
