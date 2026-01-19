@@ -198,8 +198,62 @@ function updateDateSelector() {
     document.getElementById("historyTitle").textContent = uniqueDates.length ? `Workout for ${dateSelect.value}` : "";
 }
 
+function updateHistoryPlanSelector() {
+    const select = document.getElementById("historyPlanSelect");
+    if (!select) return;
+
+    select.innerHTML = "";
+    Object.keys(plans).forEach(plan => {
+        const opt = document.createElement("option");
+        opt.value = plan;
+        opt.textContent = plan;
+        select.appendChild(opt);
+    });
+}
+
+function toggleHistoryView() {
+    const view = document.getElementById("historyViewSelect").value;
+
+    const dateControls = document.getElementById("dateHistoryControls");
+    const planControls = document.getElementById("planHistoryControls");
+
+    const dateTable = document.getElementById("workoutTableByDate");
+    const planTable = document.getElementById("workoutTableByPlan");
+
+    if (view === "date") {
+        dateControls.style.display = "block";
+        planControls.style.display = "none";
+
+        dateTable.style.display = "table";
+        planTable.style.display = "none";
+
+        renderWorkoutTable();
+    } 
+    
+    else if (view === "plan") {
+        dateControls.style.display = "none";
+        planControls.style.display = "block";
+
+        dateTable.style.display = "none";
+        planTable.style.display = "table";
+
+        renderWorkoutTableByPlan();
+    }
+
+    else {
+        dateControls.style.display = "none";
+        planControls.style.display = "none";
+
+        dateTable.style.display = "none";
+        planTable.style.display = "none";
+
+        document.getElementById("historyTitle").textContent = "";
+    }
+    
+}
+
 function renderWorkoutTable() {
-    const tbody = document.querySelector("#workoutTable tbody");
+    const tbody = document.querySelector("#workoutTableByDate tbody");
     tbody.innerHTML = "";
 
     const selectedDate = document.getElementById("historyDateSelect").value;
@@ -241,6 +295,68 @@ function renderWorkoutTable() {
                     </td>
                 `;
                 tbody.appendChild(row);
+            });
+        }
+    }
+}
+
+function renderWorkoutTableByPlan() {
+    const plan = document.getElementById("historyPlanSelect").value;
+    const tbody = document.querySelector("#workoutTableByPlan tbody");
+
+    tbody.innerHTML = "";
+    if (!plan) return;
+    
+    document.getElementById("historyTitle").textContent = plan ? `Workout Plan - ${plan}` : "";
+
+    // Filter logs for selected plan
+    const logs = workoutLogs
+        .filter(l => l.plan === plan)
+        .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    if (logs.length === 0) return;
+
+    // Group by date → exercise
+    const grouped = {};
+    logs.forEach(log => {
+        if (!grouped[log.date]) grouped[log.date] = {};
+        if (!grouped[log.date][log.exercise]) grouped[log.date][log.exercise] = [];
+        grouped[log.date][log.exercise].push(log);
+    });
+
+    for (const date in grouped) {
+        /* ---------- DATE ROW ---------- */
+        const dateRow = document.createElement("tr");
+        dateRow.innerHTML = `<td colspan="5" style="text-align:center;"><strong>${date}</strong></td>`;
+        tbody.appendChild(dateRow);
+
+        /* ---------- PLAN ROW ---------- */
+        const planRow = document.createElement("tr");
+        planRow.innerHTML = `<td colspan="5" style="text-align:center;"><em>${plan}</em></td>`;
+        tbody.appendChild(planRow);
+
+        for (const exercise in grouped[date]) {
+        /* ---------- EXERCISE ROW ---------- */
+        const exerciseRow = document.createElement("tr");
+        exerciseRow.innerHTML = `<td colspan="5" style="text-align:center;">${exercise}</td>`;
+        tbody.appendChild(exerciseRow);
+
+        grouped[date][exercise]
+            .sort((a,b) => a.set - b.set)
+            .forEach(log => {
+            const row = document.createElement("tr");
+            row.setAttribute("data-id", log.id);
+            row.innerHTML = `
+                <td contenteditable="true">${log.date}</td>
+                <td>${log.set}</td>
+                <td contenteditable="true">${log.weight}</td>
+                <td contenteditable="true">${log.reps}</td>
+                <td>
+                <button class="action-btn" onclick="updateLog(${log.id})">💾</button>
+                <button class="action-btn" onclick="deleteLog(${log.id})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(row);
             });
         }
     }
@@ -394,7 +510,7 @@ function toggleDevTab() {
 }
 
 function refreshDevTab() {
-    document.getElementById("rawData").textContent = JSON.stringify({ plans, workoutLogs }, null, 2);
+    document.getElementById("rawData").textContent = JSON.stringify(plans, null, 2);
 }
 
 function exportDB() {
@@ -551,6 +667,7 @@ async function init() {
 async function initHistoryTab() {
     await openDB();
     await loadData();
+    updateHistoryPlanSelector();
     updateDateSelector();
     renderWorkoutTable();
 }
