@@ -386,7 +386,7 @@ function deleteLog(id) {
     });
 }
 
-// ---------- Graphs --------
+// ---------- Graph Functionality --------
 function populatePlanSelect() {
     const select = document.getElementById("graphPlanSelect");
     select.innerHTML = "";
@@ -441,32 +441,66 @@ function updateSetSelect() {
 }
 
 // ---------------- Graph Rendering ----------------
+function toggleGraphMetric() {
+    const metric = document.getElementById("graphMetricSelect").value;
+    const label = document.getElementById("metricFilterLabel");
+    const input = document.getElementById("metricFilterInput");
+
+    if (metric === "weight") {
+        label.textContent = "Min Reps";
+        input.placeholder = "Minimum reps";
+    } 
+    else if (metric === "reps") {
+        label.textContent = "Weight:";
+        input.placeholder = "Exact weight";
+    }
+    else {
+        label.textContent = "N/A";
+        input.placeholder = "N/A";
+    }
+
+    renderGraph();
+}
 
 function renderGraph() {
     const plan = document.getElementById("graphPlanSelect").value;
     const exercise = document.getElementById("graphExerciseSelect").value;
     const set = parseInt(document.getElementById("graphSetSelect").value, 10);
-    const minReps = parseInt(document.getElementById("minRepsInput").value || "0", 10);
+    const metric = document.getElementById("graphMetricSelect").value;
+    const filterValue = parseInt(document.getElementById("metricFilterInput").value || "0", 10);
 
     const filtered = workoutLogs
     .filter(l =>
         l.plan === plan &&
         l.exercise === exercise &&
         l.set === set &&
-        parseInt(l.reps,10) >= minReps
+        (
+            metric === "weight"
+                ? parseInt(l.reps, 10) >= filterValue
+                : parseInt(l.weight, 10) === filterValue
+        )
     )
     .sort((a,b)=> new Date(a.date) - new Date(b.date));
 
+    //"labels" and "dataPoints" are the data being used to feed the graph
     const labels = filtered.map(l => l.date);
-    const weights = filtered.map(l => parseFloat(l.weight));
+    const dataPoints =
+    metric === "weight"
+        ? filtered.map(l => parseFloat(l.weight))
+        : filtered.map(l => parseInt(l.reps, 10));
 
-    const title = `${plan} — ${exercise} — Set ${set} — Min Reps ${minReps}`;
+    //"yLabel" and "title" are used to fill in the y_Axis Label and the Title of the Graph respectively
+    const yLabel = metric === "weight" ? "Weight" : "Reps";
+    const title =
+        metric === "weight"
+            ? `${plan} — ${exercise} — Set ${set} — Min Reps ${filterValue}`
+            : `${plan} — ${exercise} — Set ${set} — Weight ${filterValue}`;
 
     const data = {
     labels,
     datasets: [{
-        label: "Weight",
-        data: weights,
+        label: yLabel,
+        data: dataPoints,
         fill: false,
         tension: 0.2
     }]
@@ -491,7 +525,7 @@ function renderGraph() {
             title: { display: true, text: "Date" }
         },
         y: {
-            title: { display: true, text: "Weight" },
+            title: { display: true, text: yLabel },
             beginAtZero: true
         }
         }
