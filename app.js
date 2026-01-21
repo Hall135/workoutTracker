@@ -198,8 +198,62 @@ function updateDateSelector() {
     document.getElementById("historyTitle").textContent = uniqueDates.length ? `Workout for ${dateSelect.value}` : "";
 }
 
+function updateHistoryPlanSelector() {
+    const select = document.getElementById("historyPlanSelect");
+    if (!select) return;
+
+    select.innerHTML = "";
+    Object.keys(plans).forEach(plan => {
+        const opt = document.createElement("option");
+        opt.value = plan;
+        opt.textContent = plan;
+        select.appendChild(opt);
+    });
+}
+
+function toggleHistoryView() {
+    const view = document.getElementById("historyViewSelect").value;
+
+    const dateControls = document.getElementById("dateHistoryControls");
+    const planControls = document.getElementById("planHistoryControls");
+
+    const dateTable = document.getElementById("workoutTableByDate");
+    const planTable = document.getElementById("workoutTableByPlan");
+
+    if (view === "date") {
+        dateControls.style.display = "block";
+        planControls.style.display = "none";
+
+        dateTable.style.display = "table";
+        planTable.style.display = "none";
+
+        renderWorkoutTable();
+    } 
+    
+    else if (view === "plan") {
+        dateControls.style.display = "none";
+        planControls.style.display = "block";
+
+        dateTable.style.display = "none";
+        planTable.style.display = "table";
+
+        renderWorkoutTableByPlan();
+    }
+
+    else {
+        dateControls.style.display = "none";
+        planControls.style.display = "none";
+
+        dateTable.style.display = "none";
+        planTable.style.display = "none";
+
+        document.getElementById("historyTitle").textContent = "";
+    }
+    
+}
+
 function renderWorkoutTable() {
-    const tbody = document.querySelector("#workoutTable tbody");
+    const tbody = document.querySelector("#workoutTableByDate tbody");
     tbody.innerHTML = "";
 
     const selectedDate = document.getElementById("historyDateSelect").value;
@@ -246,6 +300,68 @@ function renderWorkoutTable() {
     }
 }
 
+function renderWorkoutTableByPlan() {
+    const plan = document.getElementById("historyPlanSelect").value;
+    const tbody = document.querySelector("#workoutTableByPlan tbody");
+
+    tbody.innerHTML = "";
+    if (!plan) return;
+    
+    document.getElementById("historyTitle").textContent = plan ? `Workout Plan - ${plan}` : "";
+
+    // Filter logs for selected plan
+    const logs = workoutLogs
+        .filter(l => l.plan === plan)
+        .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    if (logs.length === 0) return;
+
+    // Group by date → exercise
+    const grouped = {};
+    logs.forEach(log => {
+        if (!grouped[log.date]) grouped[log.date] = {};
+        if (!grouped[log.date][log.exercise]) grouped[log.date][log.exercise] = [];
+        grouped[log.date][log.exercise].push(log);
+    });
+
+    for (const date in grouped) {
+        /* ---------- DATE ROW ---------- */
+        const dateRow = document.createElement("tr");
+        dateRow.innerHTML = `<td colspan="5" style="text-align:center;"><strong>${date}</strong></td>`;
+        tbody.appendChild(dateRow);
+
+        /* ---------- PLAN ROW ---------- */
+        const planRow = document.createElement("tr");
+        planRow.innerHTML = `<td colspan="5" style="text-align:center;"><em>${plan}</em></td>`;
+        tbody.appendChild(planRow);
+
+        for (const exercise in grouped[date]) {
+        /* ---------- EXERCISE ROW ---------- */
+        const exerciseRow = document.createElement("tr");
+        exerciseRow.innerHTML = `<td colspan="5" style="text-align:center;">${exercise}</td>`;
+        tbody.appendChild(exerciseRow);
+
+        grouped[date][exercise]
+            .sort((a,b) => a.set - b.set)
+            .forEach(log => {
+            const row = document.createElement("tr");
+            row.setAttribute("data-id", log.id);
+            row.innerHTML = `
+                <td contenteditable="true">${log.date}</td>
+                <td>${log.set}</td>
+                <td contenteditable="true">${log.weight}</td>
+                <td contenteditable="true">${log.reps}</td>
+                <td>
+                <button class="action-btn" onclick="updateLog(${log.id})">💾</button>
+                <button class="action-btn" onclick="deleteLog(${log.id})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            });
+        }
+    }
+}
+
 function updateLog(id) {
     const row = document.querySelector(`tr[data-id="${id}"]`);
     if (!row) return;
@@ -270,7 +386,7 @@ function deleteLog(id) {
     });
 }
 
-// ---------- Graphs --------
+// ---------- Graph Functionality --------
 function populatePlanSelect() {
     const select = document.getElementById("graphPlanSelect");
     select.innerHTML = "";
@@ -325,32 +441,66 @@ function updateSetSelect() {
 }
 
 // ---------------- Graph Rendering ----------------
+function toggleGraphMetric() {
+    const metric = document.getElementById("graphMetricSelect").value;
+    const label = document.getElementById("metricFilterLabel");
+    const input = document.getElementById("metricFilterInput");
+
+    if (metric === "weight") {
+        label.textContent = "Min Reps";
+        input.placeholder = "Minimum reps";
+    } 
+    else if (metric === "reps") {
+        label.textContent = "Weight:";
+        input.placeholder = "Exact weight";
+    }
+    else {
+        label.textContent = "N/A";
+        input.placeholder = "N/A";
+    }
+
+    renderGraph();
+}
 
 function renderGraph() {
     const plan = document.getElementById("graphPlanSelect").value;
     const exercise = document.getElementById("graphExerciseSelect").value;
     const set = parseInt(document.getElementById("graphSetSelect").value, 10);
-    const minReps = parseInt(document.getElementById("minRepsInput").value || "0", 10);
+    const metric = document.getElementById("graphMetricSelect").value;
+    const filterValue = parseInt(document.getElementById("metricFilterInput").value || "0", 10);
 
     const filtered = workoutLogs
     .filter(l =>
         l.plan === plan &&
         l.exercise === exercise &&
         l.set === set &&
-        parseInt(l.reps,10) >= minReps
+        (
+            metric === "weight"
+                ? parseInt(l.reps, 10) >= filterValue
+                : parseInt(l.weight, 10) === filterValue
+        )
     )
     .sort((a,b)=> new Date(a.date) - new Date(b.date));
 
+    //"labels" and "dataPoints" are the data being used to feed the graph
     const labels = filtered.map(l => l.date);
-    const weights = filtered.map(l => parseFloat(l.weight));
+    const dataPoints =
+    metric === "weight"
+        ? filtered.map(l => parseFloat(l.weight))
+        : filtered.map(l => parseInt(l.reps, 10));
 
-    const title = `${plan} — ${exercise} — Set ${set} — Min Reps ${minReps}`;
+    //"yLabel" and "title" are used to fill in the y_Axis Label and the Title of the Graph respectively
+    const yLabel = metric === "weight" ? "Weight" : "Reps";
+    const title =
+        metric === "weight"
+            ? `${plan} — ${exercise} — Set ${set} — Min Reps ${filterValue}`
+            : `${plan} — ${exercise} — Set ${set} — Weight ${filterValue}`;
 
     const data = {
     labels,
     datasets: [{
-        label: "Weight",
-        data: weights,
+        label: yLabel,
+        data: dataPoints,
         fill: false,
         tension: 0.2
     }]
@@ -375,7 +525,7 @@ function renderGraph() {
             title: { display: true, text: "Date" }
         },
         y: {
-            title: { display: true, text: "Weight" },
+            title: { display: true, text: yLabel },
             beginAtZero: true
         }
         }
@@ -394,7 +544,7 @@ function toggleDevTab() {
 }
 
 function refreshDevTab() {
-    document.getElementById("rawData").textContent = JSON.stringify({ plans, workoutLogs }, null, 2);
+    document.getElementById("rawData").textContent = JSON.stringify(plans, null, 2);
 }
 
 function exportDB() {
@@ -551,6 +701,7 @@ async function init() {
 async function initHistoryTab() {
     await openDB();
     await loadData();
+    updateHistoryPlanSelector();
     updateDateSelector();
     renderWorkoutTable();
 }

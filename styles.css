@@ -182,6 +182,13 @@ pre {
     gap: 0.25rem;
 }
 
-/* make history header area tidy */
-#historyControls { display:flex; gap:1rem; align-items:center; justify-content:center; margin-bottom:0.5rem; }
-#historyTitle { margin:0.5rem 0; text-align:center; }
+#historyTitle { 
+    margin:0.5rem 0; 
+    text-align:center; 
+}
+
+hr {
+    border: none;
+    border-top: 5px double;
+    color: #f0f0f0
+}
