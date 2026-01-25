@@ -312,7 +312,7 @@ function renderWorkoutTableByPlan() {
     // Filter logs for selected plan
     const logs = workoutLogs
         .filter(l => l.plan === plan)
-        .sort((a,b) => new Date(a.date) - new Date(b.date));
+        .sort((a,b) => new Date(b.date) - new Date(a.date));
 
     if (logs.length === 0) return;
 
@@ -437,6 +437,11 @@ function updateSetSelect() {
         select.appendChild(opt);
     });
 
+    const opt = document.createElement("option");
+    opt.value = "All";
+    opt.textContent = `All Sets`;
+    select.appendChild(opt);
+
     renderGraph();
 }
 
@@ -465,50 +470,88 @@ function toggleGraphMetric() {
 function renderGraph() {
     const plan = document.getElementById("graphPlanSelect").value;
     const exercise = document.getElementById("graphExerciseSelect").value;
-    const set = parseInt(document.getElementById("graphSetSelect").value, 10);
+    const setValue = document.getElementById("graphSetSelect").value;
     const metric = document.getElementById("graphMetricSelect").value;
     const filterValue = parseInt(document.getElementById("metricFilterInput").value || "0", 10);
 
-    const filtered = workoutLogs
-    .filter(l =>
+    const showAllSets = setValue === "All";
+
+    // Base filter (plan + exercise only)
+    let baseLogs = workoutLogs.filter(l =>
         l.plan === plan &&
         l.exercise === exercise &&
-        l.set === set &&
         (
             metric === "weight"
                 ? parseInt(l.reps, 10) >= filterValue
                 : parseInt(l.weight, 10) === filterValue
         )
-    )
-    .sort((a,b)=> new Date(a.date) - new Date(b.date));
+    );
 
-    //"labels" and "dataPoints" are the data being used to feed the graph
-    const labels = filtered.map(l => l.date);
-    const dataPoints =
-    metric === "weight"
-        ? filtered.map(l => parseFloat(l.weight))
-        : filtered.map(l => parseInt(l.reps, 10));
+    let datasets = [];
+
+    if (!showAllSets) {
+        // SINGLE SET
+        const set = parseInt(setValue, 10);
+
+        const filtered = baseLogs
+            .filter(l => l.set === set)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        datasets.push({
+            label: metric === "weight" ? "Weight" : "Reps",
+            data: filtered.map(l => ({
+                x: l.date,
+                y: metric === "weight"
+                    ? parseFloat(l.weight)
+                    : parseInt(l.reps, 10)
+            })),
+            fill: false,
+            tension: 0.2
+        });
+
+    } else {
+        // ALL SETS MODE
+        const logsBySet = {};
+
+        baseLogs.forEach(log => {
+            if (!logsBySet[log.set]) {
+                logsBySet[log.set] = [];
+            }
+            logsBySet[log.set].push(log);
+        });
+
+        Object.keys(logsBySet)
+            .sort((a, b) => a - b)
+            .forEach(setNum => {
+                const logs = logsBySet[setNum]
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            datasets.push({
+                label: `Set ${setNum}`,
+                data: logs.map(l => ({
+                    x: l.date,
+                    y: metric === "weight"
+                        ? parseFloat(l.weight)
+                        : parseInt(l.reps, 10)
+                })),
+                fill: false,
+                tension: 0.2
+            });
+        });
+    }
 
     //"yLabel" and "title" are used to fill in the y_Axis Label and the Title of the Graph respectively
     const yLabel = metric === "weight" ? "Weight" : "Reps";
     const title =
         metric === "weight"
-            ? `${plan} — ${exercise} — Set ${set} — Min Reps ${filterValue}`
-            : `${plan} — ${exercise} — Set ${set} — Weight ${filterValue}`;
-
-    const data = {
-    labels,
-    datasets: [{
-        label: yLabel,
-        data: dataPoints,
-        fill: false,
-        tension: 0.2
-    }]
-    };
+            ? `${plan} — ${exercise} — Set ${setValue} — Min Reps ${filterValue}`
+            : `${plan} — ${exercise} — Set ${setValue} — Weight ${filterValue}`;
 
     const config = {
     type: "line",
-    data,
+    data: {
+        datasets
+    },
     options: {
         responsive: true,
         plugins: {
@@ -517,11 +560,12 @@ function renderGraph() {
             text: title
         },
         legend: {
-            display: false
+            display: showAllSets
         }
         },
         scales: {
         x: {
+            type: "category",
             title: { display: true, text: "Date" }
         },
         y: {
