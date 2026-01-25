@@ -312,7 +312,7 @@ function renderWorkoutTableByPlan() {
     // Filter logs for selected plan
     const logs = workoutLogs
         .filter(l => l.plan === plan)
-        .sort((a,b) => new Date(a.date) - new Date(b.date));
+        .sort((a,b) => new Date(b.date) - new Date(a.date));
 
     if (logs.length === 0) return;
 
@@ -717,3 +717,4 @@ async function initGraphs() {
     await loadData();
     populatePlanSelect();
 }
+
