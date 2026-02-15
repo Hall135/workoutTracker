@@ -13,35 +13,40 @@
 
 <body>
     <div class="container">            
-        
         <h1>
             <i class="material-icons">fitness_center</i> Workout Tracker
         </h1>
         
-        <!-- Create Plan -->
-        <div class="section">
-            <h2>Create Workout Plan</h2>
-            <input type="text" id="planName" placeholder="Workout Plan Name"/>
-            <button onclick="createPlan()">Create Plan</button>
+        <div class="card">
+            <!-- Create Plan -->
+            <div class="section">
+                <h2>Create Workout Plan</h2>
+                <label for="planName">Plan Name:</label>
+                <input type="text" id="planName" placeholder="Workout Plan Name"/>
+                <button onclick="createPlan()">Create Plan</button>
+            </div>
+
+            <!-- Add Exercise -->
+            <div class="section">
+                <h2>Add Exercise To Plan</h2>
+                <label for="planSelect">Plan:</label>
+                <select id="planSelect"></select>
+                <label for="exerciseName">Exercise Name:</label>
+                <input type="text" id="exerciseName" placeholder="Exercise Name"/>
+                <button onclick="addExercise()">Add Exercise</button>
+            </div>
         </div>
-
-        <!-- Add Exercise -->
-        <div class="section">
-            <h2>Add Exercise</h2>
-            <select id="planSelect"></select>
-            <input type="text" id="exerciseName" placeholder="Exercise Name"/>
-            <button onclick="addExercise()">Add Exercise</button>
-        </div>
-
-        <hr/>
-
-        <!-- Log Workout -->
-        <div class="section">
-            <h2>Log Workout</h2>
-            <select id="logPlanSelect" onchange="renderExerciseInputs()"></select>
-            <div id="exerciseInputsContainer"></div>
-            <button onclick="addSet()">➕ Add Set</button>
-            <button onclick="logEntireWorkout()">✅ Log Entire Workout</button>
+        
+        <div class="card">
+            <!-- Log Workout -->
+            <div class="section">
+                <h2>Log Workout</h2>
+                <label for="logPlanSelect">Plan:</label>
+                <select id="logPlanSelect" onchange="renderExerciseInputs()"></select>
+                <div id="exerciseInputsContainer"></div>
+                <button onclick="addSet()">➕ Add Set</button>
+                <button onclick="logEntireWorkout()">✅ Log Entire Workout</button>
+            </div>
         </div>
     </div>
 
