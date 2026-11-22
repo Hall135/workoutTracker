@@ -1,76 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Workout Tracker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111519">
+    <title>Developer Options · Workout Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#121212"/>
     <link rel="icon" href="./assets/fitness_center.png" type="image/png">
-    <link rel="stylesheet" href="./styles.css" type="text/css">
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
-
 <body>
-    <div class="container">
-        <h1>
-            <i class="material-icons">fitness_center</i> Workout Tracker
-        </h1>
-        
-        <div class="section">
-            <h2>Developer Options</h2>
-
-            <div class="card">
-                <h3>JSON Backup & Restore</h3>
-                <div class="centeredButton">
-                    <button onclick="exportDB()">💾 Export DB (JSON)</button>
-                    <input type="file" id="DBImport" accept="application/json" style="display:none" onchange="importDB(event)" />
-                    <button onclick="document.getElementById('DBImport').click()">DB Import (JSON)</button>
+    <header class="app-header">
+        <div class="container brand"><i class="material-icons" aria-hidden="true">fitness_center</i> Workout Tracker</div>
+    </header>
+    <main class="container">
+        <header class="page-heading">
+            <h1>Developer Options</h1>
+            <p>Back up your workouts and inspect your plan data.</p>
+        </header>
+        <div class="backup-grid">
+            <section class="card">
+                <h2>JSON Backup &amp; Restore</h2>
+                <p class="help-text">Export your plans and workout logs as a JSON backup.</p>
+                <div class="button-group">
+                    <button onclick="exportDB()"><i class="material-icons" aria-hidden="true">download</i> Export JSON</button>
+                    <input type="file" id="DBImport" accept="application/json" hidden onchange="importDB(event)">
+                    <button onclick="document.getElementById('DBImport').click()">Import JSON</button>
                 </div>
-
-                <h3>CSV Backup & Restore</h3>
-                <div class="centeredButton">
-                    <button onclick="downloadCSV()">⬇️ Export CSV</button>
-                    <input type="file" id="CSVImport" accept=".csv" style="display:none" onchange="importCSV(event)" />
-                    <button onclick="document.getElementById('CSVImport').click()">CSV Import</button>
-                    <input type="file" id="fullCSVImport" accept=".csv" style="display:none" onchange="importFullCSV(event)">
-                    <button onclick="document.getElementById('fullCSVImport').click()">Full CSV Import</button>
+            </section>
+            <section class="card">
+                <h2>CSV Backup &amp; Restore</h2>
+                <p class="help-text">Import CSV to add records. Full import replaces all existing data.</p>
+                <div class="button-group">
+                    <button onclick="downloadCSV()"><i class="material-icons" aria-hidden="true">download</i> Export CSV</button>
+                    <input type="file" id="CSVImport" accept=".csv" hidden onchange="importCSV(event)">
+                    <button onclick="document.getElementById('CSVImport').click()">Import CSV</button>
+                    <input type="file" id="fullCSVImport" accept=".csv" hidden onchange="importFullCSV(event)">
+                    <button class="button-danger" onclick="document.getElementById('fullCSVImport').click()">Full CSV Import</button>
                 </div>
-
-                <h3>Workout Plan Data</h3>
-                <pre id="rawData"></pre>
-                <div class="centeredButton">
-                    <button onclick="refreshDevTab()">🔄 Refresh</button>
-                </div>
-            </div>
+            </section>
         </div>
-    </div>
-
-    <nav class="nav">
+        <section class="card">
+            <div class="section-heading"><h2>Workout Plan Data</h2><button onclick="refreshDevTab()"><i class="material-icons" aria-hidden="true">refresh</i> Refresh</button></div>
+            <pre id="rawData"></pre>
+        </section>
+    </main>
+    <nav class="nav" aria-label="Main navigation">
         <a href="./index.html" class="navLink">
-            <i class="material-icons navIcon">dashboard</i>
+            <i class="material-icons navIcon" aria-hidden="true">dashboard</i>
             <span class="navText">Dashboard</span>
         </a>
-
         <a href="./historyTab.html" class="navLink">
-            <i class="material-icons navIcon">history</i>
+            <i class="material-icons navIcon" aria-hidden="true">history</i>
             <span class="navText">History</span>
         </a>
-
         <a href="./graphsTab.html" class="navLink">
-            <i class="material-icons navIcon">show_chart</i>
+            <i class="material-icons navIcon" aria-hidden="true">show_chart</i>
             <span class="navText">Graphs</span>
         </a>
-
-        <a href="./developerTab.html" class="navLink navLinkActive">
-            <i class="material-icons navIcon">settings</i>
+        <a href="./developerTab.html" class="navLink navLinkActive" aria-current="page">
+            <i class="material-icons navIcon" aria-hidden="true">settings</i>
             <span class="navText">Developer</span>
         </a>
     </nav>
-
-    <script src="./app.js"></script>
+    
+    <script src="./js/storage.js"></script>
+    <script src="./js/dataTransfer.js"></script>
+    <script src="./js/app.js"></script>
     <script>
         initDeveloperTab();
+        // Register on every entry page so each screen can be installed and used offline.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(error => console.error('Service worker registration failed:', error));
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,102 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Workout Tracker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111519">
+    <title>Workout History · Workout Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#121212"/>
     <link rel="icon" href="./assets/fitness_center.png" type="image/png">
-    <link rel="stylesheet" href="./styles.css" type="text/css">
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
-
 <body>
-    <div class="container">
-        <h1>
-            <i class="material-icons">fitness_center</i> Workout Tracker
-        </h1>
-
-        <div class="card">
-            <div class="section">
-              <div class="section"></div>  
-                <h2>Workout History</h2>
-                <div id="historyViewControls">
-                    <label for="historyViewSelect">View By:</label>
-                    <select id="historyViewSelect" onchange="toggleHistoryView()">
-                        <option value="date">Date</option>
-                        <option value="plan">Plan</option>
-                        <option value="--">--</option>
-                    </select>
-                </div>
-
-                <div id="dateHistoryControls">
-                    <label for="historyDateSelect">Select Date:</label>
-                    <select id="historyDateSelect" onchange="renderWorkoutTable()"></select>
-                </div>
-
-                <div id="planHistoryControls" style="display:none">
-                    <label for="historyPlanSelect">Select Plan:</label>
-                    <select id="historyPlanSelect" onchange="renderWorkoutTableByPlan()"></select>
-                </div>
+    <header class="app-header">
+        <div class="container brand"><i class="material-icons" aria-hidden="true">fitness_center</i> Workout Tracker</div>
+    </header>
+    <main class="container">
+        <header class="page-heading">
+            <h1>Workout History</h1>
+            <p>Review your sessions and update individual sets.</p>
+        </header>
+        <section class="card filter-grid" aria-label="History filters">
+            <div class="field">
+                <label for="historyViewSelect">View by</label>
+                <select id="historyViewSelect" onchange="toggleHistoryView()">
+                    <option value="date">Date</option>
+                    <option value="plan">Plan</option>
+                </select>
             </div>
-        </div>
-        
-        <div class="section">
-            <h3 id="historyTitle"></h3>
-            <table id="workoutTableByDate">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Set</th>
-                        <th>Weight</th>
-                        <th>Reps</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-
-            <table id="workoutTableByPlan" style="display:none">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Set</th>
-                        <th>Weight</th>
-                        <th>Reps</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-
-    <nav class="nav">
+            <div id="dateHistoryControls" class="field">
+                <label for="historyDateSelect">Date</label>
+                <select id="historyDateSelect" onchange="renderWorkoutTable()"></select>
+            </div>
+            <div id="planHistoryControls" class="field" style="display:none">
+                <label for="historyPlanSelect">Plan</label>
+                <select id="historyPlanSelect" onchange="renderWorkoutTableByPlan()"></select>
+            </div>
+        </section>
+        <section class="card" aria-label="Recorded sets">
+            <h2 id="historyTitle"></h2>
+            <p id="historyEmpty" class="empty-state" hidden>No workouts recorded yet. Log your first workout from the Dashboard.</p>
+            <p class="help-text">Edit a date, weight, or reps directly in the table, then select Save.</p>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Workout sets">
+                <table id="workoutTableByDate">
+                    <thead><tr><th scope="col">Date</th><th scope="col">Set</th><th scope="col">Weight</th><th scope="col">Reps</th><th scope="col">Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <table id="workoutTableByPlan" style="display:none">
+                    <thead><tr><th scope="col">Date</th><th scope="col">Set</th><th scope="col">Weight</th><th scope="col">Reps</th><th scope="col">Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <nav class="nav" aria-label="Main navigation">
         <a href="./index.html" class="navLink">
-            <i class="material-icons navIcon">dashboard</i>
+            <i class="material-icons navIcon" aria-hidden="true">dashboard</i>
             <span class="navText">Dashboard</span>
         </a>
-
-        <a href="./historyTab.html" class="navLink navLinkActive">
-            <i class="material-icons navIcon">history</i>
+        <a href="./historyTab.html" class="navLink navLinkActive" aria-current="page">
+            <i class="material-icons navIcon" aria-hidden="true">history</i>
             <span class="navText">History</span>
         </a>
-
         <a href="./graphsTab.html" class="navLink">
-            <i class="material-icons navIcon">show_chart</i>
+            <i class="material-icons navIcon" aria-hidden="true">show_chart</i>
             <span class="navText">Graphs</span>
         </a>
-
         <a href="./developerTab.html" class="navLink">
-            <i class="material-icons navIcon">settings</i>
+            <i class="material-icons navIcon" aria-hidden="true">settings</i>
             <span class="navText">Developer</span>
         </a>
     </nav>
-
-    <script src="./app.js"></script>
+    
+    <script src="./js/storage.js"></script>
+    <script src="./js/dataTransfer.js"></script>
+    <script src="./js/app.js"></script>
     <script>
         initHistoryTab();
+        // Register on every entry page so each screen can be installed and used offline.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(error => console.error('Service worker registration failed:', error));
+            });
+        }
     </script>
 </body>
 </html>
