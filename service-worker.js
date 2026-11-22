@@ -1,4 +1,5 @@
-const CACHE_NAME = 'workout-tracker-cache-v5';
+const CACHE_PREFIX = 'workout-tracker-cache-';
+const CACHE_NAME = CACHE_PREFIX + 'v6';
 const FILES_TO_CACHE = [
   './index.html',
   './historyTab.html',
@@ -8,8 +9,10 @@ const FILES_TO_CACHE = [
   './assets/fitness_center.png',
   './assets/font/materialIconsFont.woff2',
   './libs/chartjs/chart.js',
-  './app.js',
-  './styles.css'
+  './js/storage.js',
+  './js/dataTransfer.js',
+  './js/app.js',
+  './css/styles.css'
 ];
 
 // Install service worker and cache app files
@@ -22,20 +25,17 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate service worker and clean up old caches
+// Remove only this app's older caches before claiming clients.
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
+    caches.keys().then(async cacheNames => {
+      const oldCaches = cacheNames.filter(name =>
+        name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME
       );
+      await Promise.all(oldCaches.map(name => caches.delete(name)));
+      await self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 // Serve cached files when offline

@@ -1,90 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Workout Tracker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111519">
+    <title>Log Workout · Workout Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#121212"/>
     <link rel="icon" href="./assets/fitness_center.png" type="image/png">
-    <link rel="stylesheet" href="./styles.css" type="text/css">
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
-
 <body>
-    <div class="container">            
-        <h1>
-            <i class="material-icons">fitness_center</i> Workout Tracker
-        </h1>
-        
-        <div class="card">
-            <!-- Create Plan -->
-            <div class="section">
-                <h2>Create Workout Plan</h2>
-                <label for="planName">Plan Name:</label>
-                <input type="text" id="planName" placeholder="Workout Plan Name"/>
-                <button onclick="createPlan()">Create Plan</button>
-            </div>
-
-            <!-- Add Exercise -->
-            <div class="section">
-                <h2>Add Exercise To Plan</h2>
-                <label for="planSelect">Plan:</label>
-                <select id="planSelect"></select>
-                <label for="exerciseName">Exercise Name:</label>
-                <input type="text" id="exerciseName" placeholder="Exercise Name"/>
-                <button onclick="addExercise()">Add Exercise</button>
-            </div>
-        </div>
-        
-        <div class="card">
-            <!-- Log Workout -->
-            <div class="section">
-                <h2>Log Workout</h2>
-                <label for="logPlanSelect">Plan:</label>
+    <header class="app-header">
+        <div class="container brand"><i class="material-icons" aria-hidden="true">fitness_center</i> Workout Tracker</div>
+    </header>
+    <main class="container">
+        <header class="page-heading">
+            <h1>Log Workout</h1>
+            <p>Choose a plan and record your sets.</p>
+        </header>
+        <section aria-label="Workout entry">
+            <div class="field plan-picker">
+                <label for="logPlanSelect">Plan</label>
                 <select id="logPlanSelect" onchange="renderExerciseInputs()"></select>
-                <div id="exerciseInputsContainer"></div>
-                <button onclick="addSet()">➕ Add Set</button>
-                <button onclick="logEntireWorkout()">✅ Log Entire Workout</button>
             </div>
-        </div>
-    </div>
-
-    <nav class="nav">
-        <a href="./index.html" class="navLink navLinkActive">
-            <i class="material-icons navIcon">dashboard</i>
+            <div id="exerciseInputsContainer" class="exercise-grid"></div>
+            <div class="workout-actions">
+                <button id="addSetButton" onclick="addSet()"><i class="material-icons" aria-hidden="true">add</i> Add Set</button>
+                <button id="logWorkoutButton" class="button-primary" onclick="logEntireWorkout()"><i class="material-icons" aria-hidden="true">check</i> Log Entire Workout</button>
+            </div>
+            <p id="workoutStatus" class="status-message" role="status"></p>
+        </section>
+        <details id="planManagement" class="card plan-management">
+            <summary>Manage plans &amp; exercises</summary>
+            <div class="management-grid">
+                <section>
+                    <h2>Create Workout Plan</h2>
+                    <div class="field">
+                        <label for="planName">Plan name</label>
+                        <input type="text" id="planName" placeholder="e.g. Upper Body">
+                    </div>
+                    <button onclick="createPlan()">Create Plan</button>
+                </section>
+                <section>
+                    <h2>Add Exercise to Plan</h2>
+                    <div class="field">
+                        <label for="planSelect">Plan</label>
+                        <select id="planSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label for="exerciseName">Exercise name</label>
+                        <input type="text" id="exerciseName" placeholder="e.g. Bench Press">
+                    </div>
+                    <button onclick="addExercise()">Add Exercise</button>
+                </section>
+            </div>
+        </details>
+    </main>
+    <nav class="nav" aria-label="Main navigation">
+        <a href="./index.html" class="navLink navLinkActive" aria-current="page">
+            <i class="material-icons navIcon" aria-hidden="true">dashboard</i>
             <span class="navText">Dashboard</span>
         </a>
-
         <a href="./historyTab.html" class="navLink">
-            <i class="material-icons navIcon">history</i>
+            <i class="material-icons navIcon" aria-hidden="true">history</i>
             <span class="navText">History</span>
         </a>
-
         <a href="./graphsTab.html" class="navLink">
-            <i class="material-icons navIcon">show_chart</i>
+            <i class="material-icons navIcon" aria-hidden="true">show_chart</i>
             <span class="navText">Graphs</span>
         </a>
-
         <a href="./developerTab.html" class="navLink">
-            <i class="material-icons navIcon">settings</i>
+            <i class="material-icons navIcon" aria-hidden="true">settings</i>
             <span class="navText">Developer</span>
         </a>
     </nav>
-
-    <script src="./app.js"></script>
+    
+    <script src="./js/storage.js"></script>
+    <script src="./js/dataTransfer.js"></script>
+    <script src="./js/app.js"></script>
     <script>
         init();
-    </script>
-
-    <!-- Service Worker Registration (keeps same behavior as before) -->
-    <script>
+        // Register on every entry page so each screen can be installed and used offline.
         if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('Service Worker registered ✅', reg))
-            .catch(err => console.error('Service Worker registration failed ❌', err));
-        });
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(error => console.error('Service worker registration failed:', error));
+            });
         }
     </script>
 </body>
